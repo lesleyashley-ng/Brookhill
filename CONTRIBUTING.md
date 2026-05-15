@@ -6,15 +6,61 @@ New contributors must sign a **Contributor Agreement** before committing any cod
 
 ---
 
+## Prerequisites
+
+Before cloning the repo, make sure your Mac is set up correctly.
+
+### Python 3.11.9
+
+Check your Python version:
+
+```bash
+python3 --version
+```
+
+If it's not 3.11.9, install it via [python.org](https://www.python.org/downloads/) or pyenv.
+
+### Fix pip and python commands
+
+Macs don't alias `pip` or `python` to their Python 3 versions by default. Add these aliases to your `~/.zshrc` so they work without the `3` suffix:
+
+```bash
+echo 'alias pip=pip3' >> ~/.zshrc
+echo 'alias python=python3' >> ~/.zshrc
+source ~/.zshrc
+```
+
+You only need to do this once. After this `pip` and `python` will work as expected throughout the project.
+
+### Git
+
+Check Git is installed:
+
+```bash
+git --version
+```
+
+If not installed: https://git-scm.com/downloads
+
+### VS Code
+
+Download from https://code.visualstudio.com if not already installed.
+
+---
+
 ## Setting up your environment
 
-### 1. Clone the repo and install dependencies
+### 1. Clone the repo and create a virtual environment
 
 ```bash
 git clone https://github.com/[org]/brookhill.git
 cd brookhill
-pip install -r requirements.txt
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
 ```
+
+The `venv/` folder is gitignored — never commit it. Run `source venv/bin/activate` at the start of every working session to activate it.
 
 ### 2. Set up environment variables
 
@@ -133,13 +179,11 @@ The following checks run automatically on every commit and push.
 
 **Branch name error**
 ```bash
-# Rename your branch
 git branch -m feature/your-task-name
 ```
 
 **Commit message error**
 ```bash
-# Use the correct format
 git commit -m "feat: your description here"
 ```
 
@@ -165,4 +209,16 @@ python3 -m detect_secrets scan > .secrets.baseline
 **Branch behind develop warning**
 ```bash
 git rebase origin/develop
+```
+
+**venv not active**
+```bash
+source venv/bin/activate
+```
+
+**pip or python command not found**
+```bash
+echo 'alias pip=pip3' >> ~/.zshrc
+echo 'alias python=python3' >> ~/.zshrc
+source ~/.zshrc
 ```
