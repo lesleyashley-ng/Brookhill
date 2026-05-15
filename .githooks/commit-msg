@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# .githooks/commit-msg
+# Enforces Conventional Commits format
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+VALID_PATTERN="^(feat|fix|chore|docs|refactor|test|ci)(\(.+\))?: .{1,100}"
+
+if ! echo "$COMMIT_MSG" | grep -qE "$VALID_PATTERN"; then
+  echo ""
+  echo "❌ ERROR: Commit message does not follow Conventional Commits format."
+  echo ""
+  echo "   Format:  type: short description"
+  echo "   Example: feat: add Plinth member ingestion script"
+  echo ""
+  echo "   Valid types: feat, fix, chore, docs, refactor, test, ci"
+  echo ""
+  echo "   Your message: '$COMMIT_MSG'"
+  echo ""
+  exit 1
+fi
+
+exit 0

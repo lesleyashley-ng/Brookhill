@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# .githooks/pre-commit
+# Runs before every commit
+
+ERRORS=0
+
+# ─────────────────────────────────────────────
+# 1. Block .env files from being committed
+# ─────────────────────────────────────────────
+if git diff --cached --name-only | grep -qE '^\.env$'; then
+  echo ""
+  echo "❌ ERROR: Attempted to commit .env file."
+  echo "   The .env file contains credentials and must never be committed."
+  echo "   Remove it from staging: git reset HEAD .env"
+  echo ""
+  ERRORS=1
+fi
+
+# ─────────────────────────────────────────────
+# 2. Check branch name follows convention
+# ─────────────────────────────────────────────
+BRANCH=$(git symbolic-ref --short HEAD)
+VALID_PATTERN="^(feature|fix|chore|docs|refactor|test|ci)/.+"
+
+if ! echo "$BRANCH" | grep -qE "$VALID_PATTERN"; then
+  if [[ "$BRANCH" != "main" && "$BRANCH" != "develop" ]]; then
+    echo ""
+    echo "❌ ERROR: Branch name '$BRANCH' does not follow the naming convention."
+    echo "   Branch names must start with one of: feature/ fix/ chore/ docs/ refactor/ test/ ci/"
+    echo "   Example: feature/plinth-ingestion-script"
+    echo ""
+    ERRORS=1
+  fi
+fi
+
+# ─────────────────────────────────────────────
+# 3. Run pre-commit tool checks (ruff, secrets, whitespace etc)
+# ─────────────────────────────────────────────
+if command -v pre-commit &> /dev/null; then
+  pre-commit run --hook-stage commit
+  if [ $? -ne 0 ]; then
+    ERRORS=1
+  fi
+fi
+
+# ─────────────────────────────────────────────
+# Exit
+# ─────────────────────────────────────────────
+if [ $ERRORS -ne 0 ]; then
+  exit 1
+fi
+
+exit 0
