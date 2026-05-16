@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# .githooks/pre-push
+# Runs before git push
+
+BRANCH=$(git symbolic-ref --short HEAD)
+REMOTE=$1
+REMOTE_BRANCH=$2
+
+# ─────────────────────────────────────────────
+# 1. Block direct pushes to main from anything other than develop
+# ─────────────────────────────────────────────
+if [[ "$BRANCH" == "main" ]]; then
+  echo ""
+  echo "❌ ERROR: Direct pushes to main are not allowed."
+  echo "   main can only be updated via a pull request from develop."
+  echo ""
+  exit 1
+fi
+
+# develop pushes through normally (PRs handled by GitHub)
+if [[ "$BRANCH" == "develop" ]]; then
+  exit 0
+fi
+
+# ─────────────────────────────────────────────
+# 2. Fetch latest develop to check base
+# ─────────────────────────────────────────────
+git fetch origin develop --quiet 2>/dev/null
+
+# ─────────────────────────────────────────────
+# 3. Check branch is based on develop
+# ─────────────────────────────────────────────
+if ! git merge-base --is-ancestor origin/develop "$BRANCH" 2>/dev/null; then
+  echo ""
+  echo "❌ ERROR: Branch '$BRANCH' is not based on develop."
+  echo "   Always create branches from develop:"
+  echo ""
+  echo "     git checkout develop"
+  echo "     git pull origin develop"
+  echo "     git checkout -b feature/your-task-name"
+  echo ""
+  exit 1
+fi
+
+# ─────────────────────────────────────────────
+# 4. Warn if branch is behind develop
+# ─────────────────────────────────────────────
+BASE=$(git merge-base "$BRANCH" origin/develop)
+DEVELOP_TIP=$(git rev-parse origin/develop)
+
+if [ "$BASE" != "$DEVELOP_TIP" ]; then
+  echo ""
+  echo "⚠️  WARNING: Branch '$BRANCH' is behind origin/develop."
+  echo "   Consider rebasing before pushing: git rebase origin/develop"
+  echo ""
+  echo "   Push anyway? (y/n)"
+  read -r ANSWER < /dev/tty
+  if [[ "$ANSWER" != "y" && "$ANSWER" != "Y" ]]; then
+    echo "Push cancelled."
+    exit 1
+  fi
+fi
+
+exit 0

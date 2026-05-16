@@ -1,0 +1,28 @@
+name: Protect main branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-source-branch:
+    name: Verify PR source is develop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR is from develop
+        if: github.head_ref != 'develop'
+        run: |
+          echo "❌ Pull requests into main must come from develop only."
+          echo ""
+          echo "   Source branch was: ${{ github.head_ref }}"
+          echo ""
+          echo "   To release to main:"
+          echo "   1. Make sure develop is stable and tested"
+          echo "   2. Open a PR from develop into main"
+          exit 1
+
+      - name: Confirm source branch
+        if: github.head_ref == 'develop'
+        run: |
+          echo "✅ PR source is develop — check passed."

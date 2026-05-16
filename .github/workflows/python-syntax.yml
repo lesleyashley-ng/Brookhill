@@ -1,0 +1,44 @@
+name: Python syntax check
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  python-syntax:
+    name: Check Python syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+
+      - name: Check syntax on all Python files
+        run: |
+          echo "Checking Python syntax..."
+          ERRORS=0
+
+          find ingestion migration -name "*.py" | while read file; do
+            if ! python -m py_compile "$file" 2>/dev/null; then
+              echo "❌ Syntax error in: $file"
+              python -m py_compile "$file"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "✅ $file"
+            fi
+          done
+
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "❌ $ERRORS file(s) have syntax errors."
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All Python files passed syntax check."
