@@ -62,6 +62,11 @@ pip install -r requirements-dev.txt
 
 The `venv/` folder is gitignored — never commit it. Run `source venv/bin/activate` at the start of every working session to activate it.
 
+To deactivate the venv when you're done working:
+```bash
+deactivate
+```
+
 ### 2. Set up environment variables
 
 ```bash
